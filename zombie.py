@@ -135,10 +135,40 @@ class Zombie:
     def move_to_boy(self, r=0.5):
         self.state = 'Walk'
         self.move_slightly_to(play_mode.boy.x,play_mode.boy.y)
-        if self.distance_less_than(play_mode.boy.x,play_mode.boy.y,self.x,self.y,r):
+        if self.distance_less_than(play_mode.boy.x, play_mode.boy.y, self.x, self.y,r):
             return BehaviorTree.SUCCESS
         else:
             return BehaviorTree.RUNNING
+
+    def run_from_boy(self,r=0.5):
+        self.state = 'Walk'
+        run_x, run_y = self.x - (play_mode.boy.x - self.x), self.y - (play_mode.boy.y - self.y)
+
+
+
+        run_x   = clamp(50, run_x, 1280 - 50)
+        run_y   = clamp(50, run_y, 1024 - 50)
+
+
+        self.move_slightly_to(run_x,run_y)
+        if self.distance_less_than(run_x,run_y,self.x,self.y,r):
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.RUNNING
+
+
+
+
+
+
+
+    def is_hold_balls_more_than_boy(self,r=0.5):
+        if self.ball_count >= play_mode.boy.ball_count:
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.FAIL
+
+
 
 
 
@@ -148,38 +178,40 @@ class Zombie:
         return BehaviorTree.SUCCESS
 
     def build_behavior_tree(self):
-        a1 = Action('Set Target Location',self.set_target_location,500,50) # create node
-        a2 = Action('Move to',self.move_to,0.5)
-
-        SEQUENCE_move_to_target_location = Sequence('Move to Target Location',a1,a2)
-
-
-        a3 = Action('Set Ranfom Location',self.set_random_location)
-
-        SEQUENCE_move_wander = Sequence('Move to Wander',a3,a2)
 
 
 
-        c1 = Condition("Is Boy Nearby",self.is_boy_nearby,7)
-        a4 = Action('Approach to boy',self.move_to_boy,0.5)
 
 
-        SEQUENCE_move_to_boy = Sequence('Move to boy',c1,a4)
+        ACT_RUN_FROM_BOY = Action("Run from boy",self.run_from_boy,0.5)
+        ACT_MOVE_TO_BOY = Action("Chase Boy",self.move_to_boy,0.5)
+
+        c2 = Condition("Ball Compare",self.is_hold_balls_more_than_boy,0.5)
+
+        SEQ_IS_BALL_MORE_THAN_BOY = Sequence("Compare ball",c2, ACT_MOVE_TO_BOY)
+
+        SEL_COMPARE_BALL = Selector("Compare ball to select Action",SEQ_IS_BALL_MORE_THAN_BOY, ACT_RUN_FROM_BOY)
 
 
-        SELECTOR_chase_boy_or_wander = Selector("Chase or Wander",SEQUENCE_move_to_boy,SEQUENCE_move_wander)
-
-
-        a5 = Action("Get Patrol Location",self.get_patrol_location)
-
-
-        SEQUENCE_patrol = Sequence("Patrol",a5,a2)
+        c1 = Condition("Is boy nearby?",self.is_boy_nearby,7)
 
 
 
-        root = SELECTOR_chase_boy_or_wander
+        ACT_SET_RANDOM_LOCATION = Action("Set Random Destination",self.set_random_location)
+        ACT_MOVE_TO_TARGET = Action("Move to Destination",self.move_to)
 
 
-        self.behaviortree = BehaviorTree(root)
+
+
+
+
+        SEQ_WANDER = Sequence("Wander",ACT_SET_RANDOM_LOCATION, ACT_MOVE_TO_TARGET)
+        SEQ_CHASE_BOY = Sequence("Chase boy!",c1, SEL_COMPARE_BALL)
+
+
+        SEL_CHASE_OR_WANDER = Selector("Wander or Chase",SEQ_CHASE_BOY, SEQ_WANDER)
+
+
+        self.behaviortree = BehaviorTree(SEL_CHASE_OR_WANDER)
 
         pass
