@@ -176,6 +176,10 @@ class Zombie:
         SEQUENCE_patrol = Sequence("Patrol",a5,a2)
 
 
-        self.behaviortree = BehaviorTree(SEQUENCE_patrol)
+
+        root = SELECTOR_chase_boy_or_wander
+
+
+        self.behaviortree = BehaviorTree(root)
 
         pass
