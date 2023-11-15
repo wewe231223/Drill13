@@ -55,7 +55,7 @@ class Zombie:
     def update(self):
         self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % FRAMES_PER_ACTION
         # fill here
-
+        self.behaviortree.run()
 
     def draw(self):
         if math.cos(self.dir) < 0:
@@ -83,12 +83,27 @@ class Zombie:
         pass
 
     def distance_less_than(self, x1, y1, x2, y2, r):
-        pass
+        distance2 = (x1 - x2) ** 2 + (y1 - y2) ** 2
+        return distance2 < ( r * PIXEL_PER_METER) ** 2
 
     def move_slightly_to(self, tx, ty):
-        pass
+        self.dir = math.atan2( ty - self.y, tx - self.x )
+        self.speed = RUN_SPEED_PPS
+        self.x += self.speed * math.cos(self.dir) * game_framework.frame_time
+        self.y += self.speed * math.sin(self.dir) * game_framework.frame_time
+
+
+
 
     def move_to(self, r=0.5):
+        self.state = 'Walk'
+        self.move_slightly_to(self.tx,self.ty)
+        if self.distance_less_than(self.tx,self.ty,self.x,self.y,r):
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.RUNNING
+
+
         pass
 
     def set_random_location(self):
@@ -104,4 +119,13 @@ class Zombie:
         pass
 
     def build_behavior_tree(self):
+        a1 = Action('Set Target Location',self.set_target_location,500,50) # create node
+        a2 = Action('Move to',self.move_to,0.5)
+
+        root = SEQUENCE_NODE = Sequence('Move to Target Location',a1,a2)
+        self.behaviortree = BehaviorTree(root)
+
+
+
+
         pass
