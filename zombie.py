@@ -48,6 +48,21 @@ class Zombie:
         self.build_behavior_tree()
 
 
+        self.patrol_points = [
+            (43, 274),
+            (1118, 274),
+            (1050, 494),
+            (575, 804),
+            (235, 991),
+            (575, 804),
+            (1050, 494)
+
+
+        ]
+
+        self.loc_no = 0
+
+
     def get_bb(self):
         return self.x - 50, self.y - 50, self.x + 50, self.y + 50
 
@@ -107,25 +122,60 @@ class Zombie:
         pass
 
     def set_random_location(self):
-        pass
+        self.ty, self.ty = random.randint(100,1280 - 100), random.randint(100,1024-100)
 
-    def is_boy_nearby(self, distance):
-        pass
+
+    def is_boy_nearby(self, r):
+        if self.distance_less_than(play_mode.boy.x,play_mode.boy.y,self.x,self.y,r):
+            return BehaviorTree.SUCCESS
+        else :
+            return BehaviorTree.FAIL
+
 
     def move_to_boy(self, r=0.5):
-        pass
+        self.state = 'Walk'
+        self.move_slightly_to(play_mode.boy.x,play_mode.boy.y)
+        if self.distance_less_than(play_mode.boy.x,play_mode.boy.y,self.x,self.y,r):
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.RUNNING
+
+
 
     def get_patrol_location(self):
-        pass
+        self.tx, self.ty = self.patrol_points[self.loc_no]
+        self.loc_no += ( self.loc_no + 1 ) % len(self.patrol_points)
+        return BehaviorTree.SUCCESS
 
     def build_behavior_tree(self):
         a1 = Action('Set Target Location',self.set_target_location,500,50) # create node
         a2 = Action('Move to',self.move_to,0.5)
 
-        root = SEQUENCE_NODE = Sequence('Move to Target Location',a1,a2)
-        self.behaviortree = BehaviorTree(root)
+        SEQUENCE_move_to_target_location = Sequence('Move to Target Location',a1,a2)
+
+
+        a3 = Action('Set Ranfom Location',self.set_random_location)
+
+        SEQUENCE_move_wander = Sequence('Move to Wander',a3,a2)
 
 
 
+        c1 = Condition("Is Boy Nearby",self.is_boy_nearby,7)
+        a4 = Action('Approach to boy',self.move_to_boy,0.5)
+
+
+        SEQUENCE_move_to_boy = Sequence('Move to boy',c1,a4)
+
+
+        SELECTOR_chase_boy_or_wander = Selector("Chase or Wander",SEQUENCE_move_to_boy,SEQUENCE_move_wander)
+
+
+        a5 = Action("Get Patrol Location",self.get_patrol_location)
+
+
+        SEQUENCE_patrol = Sequence("Patrol",a5,a2)
+
+
+        self.behaviortree = BehaviorTree(SEQUENCE_patrol)
 
         pass
