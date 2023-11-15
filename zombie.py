@@ -44,7 +44,7 @@ class Zombie:
         self.frame = random.randint(0, 9)
         self.state = 'Idle'
         self.ball_count = 0
-
+        self.tx, self.ty = 1000,1000
         self.build_behavior_tree()
 
 
@@ -64,6 +64,7 @@ class Zombie:
             Zombie.images[self.state][int(self.frame)].draw(self.x, self.y, 100, 100)
         self.font.draw(self.x - 10, self.y + 60, f'{self.ball_count}', (0, 0, 255))
         draw_rectangle(*self.get_bb())
+        self.marker_image.draw(self.tx + 25 ,self.ty - 25)
 
     def handle_event(self, event):
         pass
@@ -74,6 +75,11 @@ class Zombie:
 
 
     def set_target_location(self, x=None, y=None):
+        if not x or not y:
+            raise ValueError("Target Position Error")
+        self.ty, self.ty = x,y
+
+        return BehaviorTree.SUCCESS
         pass
 
     def distance_less_than(self, x1, y1, x2, y2, r):
