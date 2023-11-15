@@ -22,6 +22,10 @@ FRAMES_PER_ACTION = 10.0
 
 animation_names = ['Walk', 'Idle']
 
+# zombie run speed factor
+
+global ZOMBIE_SPEED_COEFFICIENT
+
 
 class Zombie:
     images = None
@@ -113,6 +117,8 @@ class Zombie:
     def move_to(self, r=0.5):
         self.state = 'Walk'
         self.move_slightly_to(self.tx,self.ty)
+
+
         if self.distance_less_than(self.tx,self.ty,self.x,self.y,r):
             return BehaviorTree.SUCCESS
         else:
@@ -134,6 +140,8 @@ class Zombie:
 
     def move_to_boy(self, r=0.5):
         self.state = 'Walk'
+
+
         self.move_slightly_to(play_mode.boy.x,play_mode.boy.y)
         if self.distance_less_than(play_mode.boy.x, play_mode.boy.y, self.x, self.y,r):
             return BehaviorTree.SUCCESS
@@ -142,16 +150,16 @@ class Zombie:
 
     def run_from_boy(self,r=0.5):
         self.state = 'Walk'
-        run_x, run_y = self.x - (play_mode.boy.x - self.x), self.y - (play_mode.boy.y - self.y)
+        self.tx, self.ty = self.x - (play_mode.boy.x - self.x), self.y - (play_mode.boy.y - self.y)
 
 
 
-        run_x   = clamp(50, run_x, 1280 - 50)
-        run_y   = clamp(50, run_y, 1024 - 50)
+        self.tx   = clamp(50, self.tx, 1280 - 50)
+        self.ty   = clamp(50, self.ty, 1024 - 50)
 
 
-        self.move_slightly_to(run_x,run_y)
-        if self.distance_less_than(run_x,run_y,self.x,self.y,r):
+        self.move_slightly_to(self.tx,self.ty)
+        if self.distance_less_than(self.tx,self.ty,self.x,self.y,r):
             return BehaviorTree.SUCCESS
         else:
             return BehaviorTree.RUNNING
