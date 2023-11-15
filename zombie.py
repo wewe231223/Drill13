@@ -22,9 +22,11 @@ FRAMES_PER_ACTION = 10.0
 
 animation_names = ['Walk', 'Idle']
 
-# zombie run speed factor
 
-global ZOMBIE_SPEED_COEFFICIENT
+# 2020182009 김승범
+
+
+
 
 
 class Zombie:
@@ -48,7 +50,7 @@ class Zombie:
         self.frame = random.randint(0, 9)
         self.state = 'Idle'
         self.ball_count = 0
-        self.tx, self.ty = 1000,1000
+        self.tx, self.ty = 1000, 1000
         self.build_behavior_tree()
 
 
@@ -103,7 +105,7 @@ class Zombie:
 
     def distance_less_than(self, x1, y1, x2, y2, r):
         distance2 = (x1 - x2) ** 2 + (y1 - y2) ** 2
-        return distance2 < ( r * PIXEL_PER_METER) ** 2
+        return distance2 < ( r * PIXEL_PER_METER ) ** 2
 
     def move_slightly_to(self, tx, ty):
         self.dir = math.atan2( ty - self.y, tx - self.x )
@@ -154,8 +156,8 @@ class Zombie:
 
 
 
-        self.tx   = clamp(50, self.tx, 1280 - 50)
-        self.ty   = clamp(50, self.ty, 1024 - 50)
+        self.tx = clamp(50, self.tx, 1280 - 50)
+        self.ty = clamp(50, self.ty, 1024 - 50)
 
 
         self.move_slightly_to(self.tx,self.ty)
